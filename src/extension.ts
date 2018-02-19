@@ -17,8 +17,32 @@ export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('extension.sayHello', () => {
         // The code you place here will be executed every time your command is executed
 
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
+        // // Display a message box to the user
+        // vscode.window.showInformationMessage('Hello World!');
+        // console.log('Ran Hello World command!!!!!');
+
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return; // No open text editor
+        }
+
+        const selection = editor.selection;
+        const text = editor.document.getText(selection);
+        const position = editor.selection.active;
+        console.log(`editor.selection.active.line: ${position.line}`);
+        // editor.selection.active = position; //position.with(3, 0);
+
+
+        const newPosition = position.with(position.line + 1, 0);
+        const newSelection = new vscode.Selection(newPosition, newPosition);
+        editor.selection = newSelection;
+        // // check if there is no selection
+        // if (editor.selection.isEmpty) {
+        //     // the Position object gives you the line and character where the cursor is
+        //     const position = editor.selection.active;
+        //     position.line
+        // }
+
     });
 
     context.subscriptions.push(disposable);

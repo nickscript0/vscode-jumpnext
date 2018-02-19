@@ -11,7 +11,8 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onLanguage:typescript",
+        "onLanguage:javascript"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -19,6 +20,52 @@
             {
                 "command": "extension.sayHello",
                 "title": "Hello World"
+            },
+            {
+                "command": "extension.sayHello.nextSymbol",
+                "title": "Next Symbol",
+                "category": "JumpNext"
+            },
+            {
+                "command": "extension.sayHello.previousSymbol",
+                "title": "Previous Symbol",
+                "category": "JumpNext"
+            },
+            {
+                "command": "extension.sayHello.nextLocalChange",
+                "title": "Next Local Change",
+                "category": "JumpNext"
+            },
+            {
+                "command": "extension.sayHello.previousLocalChange",
+                "title": "Previous Local Change",
+                "category": "JumpNext"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "extension.sayHello.previousSymbol",
+                "key": "ctrl+,",
+                "mac": "ctrl+,",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.sayHello.nextSymbol",
+                "key": "ctrl+.",
+                "mac": "ctrl+.",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.sayHello.previousLocalChange",
+                "key": "ctrl+shift+,",
+                "mac": "ctrl+shift+,",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.sayHello.nextLocalChange",
+                "key": "ctrl+shift+.",
+                "mac": "ctrl+shift+.",
+                "when": "editorTextFocus"
             }
         ]
     },

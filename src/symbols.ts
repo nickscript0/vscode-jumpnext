@@ -17,19 +17,16 @@ export const nextSymbolPosition: NewPositionFunc = async (document, currentPosit
 
 export const previousSymbolPosition: NewPositionFunc = async (document, currentPosition) => {
     return _getNewSymbolPosition(document, currentPosition,
-        (symbols, currentPosition) => {
-            const firstReverseIndex = symbols.slice().reverse().findIndex(s => s.location.range.start.line < currentPosition.line);
-            return (symbols.length - 1) - firstReverseIndex;
-        });
+        (symbols, currentPosition) =>
+            findLastIndex(symbols, s => s.location.range.start.line < currentPosition.line));
 };
 
 export const nextSymbolPositionSameScope: NewPositionFunc = async (document, currentPosition) => {
     return _getNewSymbolPosition(document, currentPosition,
         (symbols, currentPosition) => {
             const currentSymbol = symbols.find(s => s.location.range.start.line === currentPosition.line);
-            const nextLineIndex = symbols.findIndex(s => currentSymbol !== undefined &&
+            return symbols.findIndex(s => currentSymbol !== undefined &&
                 (s.location.range.start.line > currentPosition.line && currentSymbol.containerName === s.containerName));
-            return nextLineIndex;
         })
 };
 
@@ -37,9 +34,8 @@ export const previousSymbolPositionSameScope: NewPositionFunc = async (document,
     return _getNewSymbolPosition(document, currentPosition,
         (symbols, currentPosition) => {
             const currentSymbol = symbols.find(s => s.location.range.start.line === currentPosition.line);
-            const firstReverseIndex = symbols.slice().reverse().findIndex(s => currentSymbol !== undefined &&
+            return findLastIndex(symbols, s => currentSymbol !== undefined &&
                 (s.location.range.start.line < currentPosition.line && currentSymbol.containerName === s.containerName));
-            return (symbols.length - 1) - firstReverseIndex;
         })
 };
 

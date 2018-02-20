@@ -4,26 +4,30 @@ import * as vscode from 'vscode';
 export async function getSymbols(document: vscode.TextDocument) {
     const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>('vscode.executeDocumentSymbolProvider', document.uri);
     if (!symbols) return [];
-    return symbols.filter(s => s.containerName === '');
+    return symbols; //.filter(s => s.containerName === '');
 }
 
-export type NewPositionFunc = (document: vscode.TextDocument, currentPosition: vscode.Position) => Promise<number>;
+export type NewPositionFunc = (document: vscode.TextDocument, currentPosition: vscode.Position) => Promise<vscode.Position>;
 
 export const nextSymbolPosition: NewPositionFunc = async (document, currentPosition) => {
     const symbols = await getSymbols(document);
-    // currentPosition.line
-    const next = symbols.map(s => s.location.range.start.line)
-        .find(symbolLine => symbolLine > currentPosition.line);
-    return (next !== undefined) ? next : currentPosition.line;
+    const nextLineIndex = symbols.findIndex(s => s.location.range.start.line > currentPosition.line);
+    return _symbolsArrToPosition(nextLineIndex, symbols, currentPosition);
 };
 
 export const previousSymbolPosition: NewPositionFunc = async (document, currentPosition) => {
     const symbols = await getSymbols(document);
-    // currentPosition.line
-    const symbolLines = symbols.map(s => s.location.range.start.line);
-    const prevIndex = symbolLines.indexOf(currentPosition.line) - 1;
-
-    // console.log(`Of the available lines: ${JSON.stringify(symbols.map(s => s.location.range.start.line))}, current=${currentPosition.line}, prev=${prev}`);
-
-    return (prevIndex > -1) ? symbolLines[prevIndex] : currentPosition.line;
+    const prevIndex = symbols.findIndex(s => s.location.range.start.line === currentPosition.line) - 1;
+    return _symbolsArrToPosition(prevIndex, symbols, currentPosition);
 };
+
+function _symbolsArrToPosition(index: number, symbols: vscode.SymbolInformation[],
+    defaultPosition: vscode.Position): vscode.Position {
+    let line = defaultPosition.line;
+    let character = defaultPosition.character;
+    if (index !== -1) {
+        line = symbols[index].location.range.start.line;
+        character = symbols[index].location.range.start.character;
+    }
+    return new vscode.Position(line, character);
+}

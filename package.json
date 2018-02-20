@@ -45,26 +45,26 @@
         "keybindings": [
             {
                 "command": "extension.jump.previousSymbol",
+                "key": "ctrl+[",
+                "mac": "ctrl+[",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.jump.nextSymbol",
+                "key": "ctrl+]",
+                "mac": "ctrl+]",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.jump.previousLocalChange",
                 "key": "ctrl+,",
                 "mac": "ctrl+,",
                 "when": "editorTextFocus"
             },
             {
-                "command": "extension.jump.nextSymbol",
+                "command": "extension.jump.nextLocalChange",
                 "key": "ctrl+.",
                 "mac": "ctrl+.",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "extension.jump.previousLocalChange",
-                "key": "ctrl+shift+,",
-                "mac": "ctrl+shift+,",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "extension.jump.nextLocalChange",
-                "key": "ctrl+shift+.",
-                "mac": "ctrl+shift+.",
                 "when": "editorTextFocus"
             }
         ]

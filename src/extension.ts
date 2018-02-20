@@ -101,10 +101,12 @@ export function deactivate() {
 async function updateCursorPosition(newPositionFunc: symbols.NewPositionFunc) {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
-        const newLine = await newPositionFunc(editor.document, editor.selection.active);
-        const newPosition = editor.selection.active.with(newLine, 0);
+        const newPosition = await newPositionFunc(editor.document, editor.selection.active);
         const newSelection = new vscode.Selection(newPosition, newPosition);
+        // Move the cursor
         editor.selection = newSelection;
-        console.log(`Moved cursor to line ${newLine}`);
+        // Move the editor window
+        editor.revealRange(newSelection, vscode.TextEditorRevealType.AtTop);
+        console.log(`Moved cursor to line ${newPosition.line}`);
     }
 }

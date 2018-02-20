@@ -22,47 +22,47 @@
                 "title": "Hello World"
             },
             {
-                "command": "extension.sayHello.nextSymbol",
+                "command": "extension.jump.nextSymbol",
                 "title": "Next Symbol",
                 "category": "JumpNext"
             },
             {
-                "command": "extension.sayHello.previousSymbol",
+                "command": "extension.jump.previousSymbol",
                 "title": "Previous Symbol",
                 "category": "JumpNext"
             },
             {
-                "command": "extension.sayHello.nextLocalChange",
+                "command": "extension.jump.nextLocalChange",
                 "title": "Next Local Change",
                 "category": "JumpNext"
             },
             {
-                "command": "extension.sayHello.previousLocalChange",
+                "command": "extension.jump.previousLocalChange",
                 "title": "Previous Local Change",
                 "category": "JumpNext"
             }
         ],
         "keybindings": [
             {
-                "command": "extension.sayHello.previousSymbol",
+                "command": "extension.jump.previousSymbol",
                 "key": "ctrl+,",
                 "mac": "ctrl+,",
                 "when": "editorTextFocus"
             },
             {
-                "command": "extension.sayHello.nextSymbol",
+                "command": "extension.jump.nextSymbol",
                 "key": "ctrl+.",
                 "mac": "ctrl+.",
                 "when": "editorTextFocus"
             },
             {
-                "command": "extension.sayHello.previousLocalChange",
+                "command": "extension.jump.previousLocalChange",
                 "key": "ctrl+shift+,",
                 "mac": "ctrl+shift+,",
                 "when": "editorTextFocus"
             },
             {
-                "command": "extension.sayHello.nextLocalChange",
+                "command": "extension.jump.nextLocalChange",
                 "key": "ctrl+shift+.",
                 "mac": "ctrl+shift+.",
                 "when": "editorTextFocus"

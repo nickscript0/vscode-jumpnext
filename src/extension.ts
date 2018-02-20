@@ -14,7 +14,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-import * as shell from './shell';
+
+import * as git from './git';
+import * as symbols from './symbols';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -57,21 +59,30 @@ export function activate(context: vscode.ExtensionContext) {
         //     // the Position object gives you the line and character where the cursor is
         //     const position = editor.selection.active;
         //     position.line
-        // }            
+        // }
 
-        await gitTest();
+        await git.gitTest();
+        const symbolList = await symbols.getSymbols(editor.document);
+        if (symbolList) {
+            const symbolListStrings = symbolList.map(s => `container=${s.containerName}, kind=${s.kind}, location.uri.path=${s.location.uri.path}, location.start.line=${s.location.range.start.line} name=${s.name},`);
+            console.log(`SYMBOLS IS: ${symbolListStrings.join('\n')}`);
+        } else {
+            console.log(`No symbols found!`);
+        }
     });
 
-    const nextSymbolCommand = vscode.commands.registerCommand('extension.sayHello.nextSymbol', async () => {
+    const nextSymbolCommand = vscode.commands.registerCommand('extension.jump.nextSymbol', async () => {
         console.log(`Command nextSymbol triggered!`);
+        updateCursorPosition(symbols.nextSymbolPosition);
     });
-    const previousSymbolCommand = vscode.commands.registerCommand('extension.sayHello.previousSymbol', async () => {
+    const previousSymbolCommand = vscode.commands.registerCommand('extension.jump.previousSymbol', async () => {
         console.log(`Command previousSymbol triggered!`);
+        updateCursorPosition(symbols.previousSymbolPosition);
     });
-    const nextLocalChangeCommand = vscode.commands.registerCommand('extension.sayHello.nextLocalChange', async () => {
+    const nextLocalChangeCommand = vscode.commands.registerCommand('extension.jump.nextLocalChange', async () => {
         console.log(`Command nextLocalChange triggered!`);
     });
-    const previousLocalChangeCommand = vscode.commands.registerCommand('extension.sayHello.previousLocalChange', async () => {
+    const previousLocalChangeCommand = vscode.commands.registerCommand('extension.jump.previousLocalChange', async () => {
         console.log(`Command previousLocalChange triggered!`);
     });
 
@@ -87,58 +98,13 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
 }
 
-function refreshGitCache(document: vscode.TextDocument | vscode.WorkspaceFoldersChangeEvent) {
-    // TODO: run git diff on save
-}
-
-async function gitTest() {
-
-    // TODO DETERMINE HOW explorerCommands.ts in git-lens repo sets repoPath
-    // e.g. :
-    // async terminalPushCommit(node: ExplorerNode) {
-    //     if (!(node instanceof CommitNode)) return;
-
-    //     const branch = node.branch || await Container.git.getBranch(node.repoPath);
-    //     if (branch === undefined) return;
-
-    //     const command = `push ${branch.getRemote()} ${node.ref}:${branch.getName()}`;
-    //     this.sendTerminalCommand(command, node.repoPath);
-    // }
-
-
-    // const diffResult = await shell.runCommand('git', ['--version']);
-    // const diffResult = await shell.runCommand('pwd', [], {cwd: vscode.workspace.rootPath});
-
-    // console.log(`diffResult: ${diffResult}`);
-    const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
-    console.log(`rootPath: ${rootPath}`);
-    if (rootPath) {
-        const diffResult = await shell.runCommand('git', ['status'], { cwd: rootPath });
-        console.log(`git status: ${diffResult}`);
-    } else {
-        console.log(`You do not have a workspace folder open so we can't determine your root path`);
+async function updateCursorPosition(newPositionFunc: symbols.NewPositionFunc) {
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+        const newLine = await newPositionFunc(editor.document, editor.selection.active);
+        const newPosition = editor.selection.active.with(newLine, 0);
+        const newSelection = new vscode.Selection(newPosition, newPosition);
+        editor.selection = newSelection;
+        console.log(`Moved cursor to line ${newLine}`);
     }
-    // console.log(`process.env: ${JSON.stringify(process.env)}`);
-
-    // const sc = vscode.scm.createSourceControl('git', 'git'); //, vscode.Uri.parse(vscode.scm.workspaceRoot));
-    // console.log(`sc.rootUri: ${sc.rootUri}`);
-
-    // function createResourceUri(relativePath: string): vscode.Uri {
-    //     const absolutePath = path.join(vscode.workspace.rootPath, relativePath);
-    //     return vscode.Uri.file(absolutePath);
-    //   }
-
-    //   const gitSCM = vscode.scm.createSourceControl('git', "Git");
-
-    //   const index = gitSCM.createResourceGroup('index', "Index");
-    //   index.resourceStates = [
-    //     { resourceUri: createResourceUri('README.md') },
-    //     { resourceUri: createResourceUri('src/test/api.ts') }
-    //   ];
-
-    //   const workingTree = gitSCM.createResourceGroup('workingTree', "Changes");
-    //   workingTree.resourceStates = [
-    //     { resourceUri: createResourceUri('.travis.yml') },
-    //     { resourceUri: createResourceUri('README.md') }
-    //   ];    
 }

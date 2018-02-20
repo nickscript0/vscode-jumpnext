@@ -1,26 +1,5 @@
 import * as vscode from 'vscode';
 
-// Symbols to jump to
-const SYMBOL_WHITELIST = [
-    vscode.SymbolKind.Class,
-    vscode.SymbolKind.Constructor,
-    vscode.SymbolKind.Enum,
-    vscode.SymbolKind.Event, // Keep?
-    vscode.SymbolKind.Field,
-    vscode.SymbolKind.File, // Keep?
-    vscode.SymbolKind.Function,
-    vscode.SymbolKind.Interface,
-    vscode.SymbolKind.Method,
-    vscode.SymbolKind.Namespace,
-    vscode.SymbolKind.Property,
-    vscode.SymbolKind.Struct,
-    vscode.SymbolKind.TypeParameter, // Keep?
-    vscode.SymbolKind.Module,
-
-    // vscode.SymbolKind.Key,
-    // vscode.SymbolKind.String,
-];
-
 // TODO: this could be cached per openPage, on pageOpen and pageChange events
 export async function getSymbols(document: vscode.TextDocument) {
     const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>('vscode.executeDocumentSymbolProvider', document.uri);
@@ -31,37 +10,51 @@ export async function getSymbols(document: vscode.TextDocument) {
 export type NewPositionFunc = (document: vscode.TextDocument, currentPosition: vscode.Position) => Promise<vscode.Position>;
 
 export const nextSymbolPosition: NewPositionFunc = async (document, currentPosition) => {
-    const symbols = await getSymbols(document);
-    const nextLineIndex = symbols.findIndex(s => s.location.range.start.line > currentPosition.line);
-    return _symbolsArrToPosition(nextLineIndex, symbols, currentPosition);
+    return _getNewSymbolPosition(document, currentPosition,
+        (symbols, currentPosition) =>
+            symbols.findIndex(s => s.location.range.start.line > currentPosition.line));
 };
 
 export const previousSymbolPosition: NewPositionFunc = async (document, currentPosition) => {
-    const symbols = await getSymbols(document);
-    // const prevIndex = symbols.findIndex(s => s.location.range.start.line === currentPosition.line) - 1;
-    // Find the lastIndex before currentSymbol, by reversing the symbols array and using findIndex
-    const firstReverseIndex = symbols.slice().reverse().findIndex(s => s.location.range.start.line < currentPosition.line);
-    const prevIndex = (symbols.length - 1) - firstReverseIndex;
-    return _symbolsArrToPosition(prevIndex, symbols, currentPosition);
+    return _getNewSymbolPosition(document, currentPosition,
+        (symbols, currentPosition) => {
+            const firstReverseIndex = symbols.slice().reverse().findIndex(s => s.location.range.start.line < currentPosition.line);
+            return (symbols.length - 1) - firstReverseIndex;
+        });
 };
 
 export const nextSymbolPositionSameScope: NewPositionFunc = async (document, currentPosition) => {
-    const symbols = await getSymbols(document);
-    const currentSymbol = symbols.find(s => s.location.range.start.line === currentPosition.line);
-    const nextLineIndex = symbols.findIndex(s => currentSymbol !== undefined &&
-        (s.location.range.start.line > currentPosition.line && currentSymbol.containerName === s.containerName));
-    return _symbolsArrToPosition(nextLineIndex, symbols, currentPosition);
+    return _getNewSymbolPosition(document, currentPosition,
+        (symbols, currentPosition) => {
+            const currentSymbol = symbols.find(s => s.location.range.start.line === currentPosition.line);
+            const nextLineIndex = symbols.findIndex(s => currentSymbol !== undefined &&
+                (s.location.range.start.line > currentPosition.line && currentSymbol.containerName === s.containerName));
+            return nextLineIndex;
+        })
 };
 
 export const previousSymbolPositionSameScope: NewPositionFunc = async (document, currentPosition) => {
-    const symbols = await getSymbols(document);
-    const currentSymbol = symbols.find(s => s.location.range.start.line === currentPosition.line);
-    // Find the lastIndex before currentSymbol, by reversing the symbols array and using findIndex
-    const firstReverseIndex = symbols.slice().reverse().findIndex(s => currentSymbol !== undefined &&
-        (s.location.range.start.line < currentPosition.line && currentSymbol.containerName === s.containerName));
-    const prevIndex = (symbols.length - 1) - firstReverseIndex;
-    return _symbolsArrToPosition(prevIndex, symbols, currentPosition);
+    return _getNewSymbolPosition(document, currentPosition,
+        (symbols, currentPosition) => {
+            const currentSymbol = symbols.find(s => s.location.range.start.line === currentPosition.line);
+            const firstReverseIndex = symbols.slice().reverse().findIndex(s => currentSymbol !== undefined &&
+                (s.location.range.start.line < currentPosition.line && currentSymbol.containerName === s.containerName));
+            return (symbols.length - 1) - firstReverseIndex;
+        })
 };
+
+// Like Array.findIndex() but instead finds the lastIndex
+function findLastIndex<T>(arr: Array<T>, predicate: (value: T) => boolean) {
+    const firstReverseIndex = arr.slice().reverse().findIndex(predicate);
+    return (arr.length - 1) - firstReverseIndex;
+}
+
+async function _getNewSymbolPosition(document: vscode.TextDocument, currentPosition: vscode.Position,
+    calcNewPosition: (a: vscode.SymbolInformation[], b: vscode.Position) => number): Promise<vscode.Position> {
+    const symbols = await getSymbols(document);
+    const newIndex = calcNewPosition(symbols, currentPosition);
+    return _symbolsArrToPosition(newIndex, symbols, currentPosition);
+}
 
 function _symbolsArrToPosition(index: number, symbols: vscode.SymbolInformation[],
     defaultPosition: vscode.Position): vscode.Position {
@@ -107,3 +100,24 @@ export const SymbolStrings = {
     25: "TypeParameter",
     false: "Undefined"
 };
+
+// Symbols to jump to
+const SYMBOL_WHITELIST = [
+    vscode.SymbolKind.Class,
+    vscode.SymbolKind.Constructor,
+    vscode.SymbolKind.Enum,
+    vscode.SymbolKind.Event, // Keep?
+    vscode.SymbolKind.Field,
+    vscode.SymbolKind.File, // Keep?
+    vscode.SymbolKind.Function,
+    vscode.SymbolKind.Interface,
+    vscode.SymbolKind.Method,
+    vscode.SymbolKind.Namespace,
+    vscode.SymbolKind.Property,
+    vscode.SymbolKind.Struct,
+    vscode.SymbolKind.TypeParameter, // Keep?
+    vscode.SymbolKind.Module,
+
+    // vscode.SymbolKind.Key,
+    // vscode.SymbolKind.String,
+];

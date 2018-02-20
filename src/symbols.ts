@@ -7,7 +7,8 @@ export async function getSymbols(document: vscode.TextDocument) {
     return symbols //.filter(s => SYMBOL_WHITELIST.includes(s.kind));
 }
 
-export type NewPositionFunc = (document: vscode.TextDocument, currentPosition: vscode.Position) => Promise<vscode.Position>;
+export type NewPositionFunc = (document: vscode.TextDocument, currentPosition: vscode.Position)
+    => Promise<vscode.Position>;
 
 export const nextSymbolPosition: NewPositionFunc = async (document, currentPosition) => {
     return _getNewSymbolPosition(document, currentPosition,

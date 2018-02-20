@@ -114,7 +114,7 @@ async function updateCursorPosition(newPositionFunc: symbols.NewPositionFunc) {
         // Move the cursor
         editor.selection = newSelection;
         // Move the editor window
-        editor.revealRange(newSelection, vscode.TextEditorRevealType.AtTop);
+        editor.revealRange(newSelection, vscode.TextEditorRevealType.Default);
         console.log(`Moved cursor to line ${newPosition.line}`);
     }
 }

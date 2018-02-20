@@ -11,8 +11,7 @@
         "Other"
     ],
     "activationEvents": [
-        "onLanguage:typescript",
-        "onLanguage:javascript"
+        "*"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -27,8 +26,18 @@
                 "category": "JumpNext"
             },
             {
+                "command": "extension.jump.nextSymbolSameScope",
+                "title": "Next Symbol - Same Scope",
+                "category": "JumpNext"
+            },
+            {
                 "command": "extension.jump.previousSymbol",
                 "title": "Previous Symbol",
+                "category": "JumpNext"
+            },
+            {
+                "command": "extension.jump.previousSymbolSameScope",
+                "title": "Previous Symbol - Same Scope",
                 "category": "JumpNext"
             },
             {
@@ -53,6 +62,18 @@
                 "command": "extension.jump.nextSymbol",
                 "key": "ctrl+]",
                 "mac": "ctrl+]",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.jump.previousSymbolSameScope",
+                "key": "ctrl+shift+[",
+                "mac": "ctrl+shift+[",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "extension.jump.nextSymbolSameScope",
+                "key": "ctrl+shift+]",
+                "mac": "ctrl+shift+]",
                 "when": "editorTextFocus"
             },
             {

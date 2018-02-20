@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import * as shell from './shell';
 
-function refreshGitCache(document: vscode.TextDocument | vscode.WorkspaceFoldersChangeEvent) {
-    // TODO: run git diff on save
-}
+// function refreshGitCache(document: vscode.TextDocument | vscode.WorkspaceFoldersChangeEvent) {
+//     // TODO: run git diff on save
+// }
 
 export async function gitTest() {
 

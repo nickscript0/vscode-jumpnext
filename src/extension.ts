@@ -27,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Register event handlers
     vscode.workspace.onDidSaveTextDocument(d => console.log(`onDidSaveTextDocument event fired`));
     vscode.workspace.onDidChangeWorkspaceFolders(d => console.log(`onDidChangeWorkspaceFolders event fired`));
+    // TODO: could maybe skip the openTextDocument event for efficiency and instead just populate the gitCache on startup
     vscode.workspace.onDidOpenTextDocument(d => console.log(`onDidOpenTextDocument event fired`));
 
     // The command has been defined in the package.json file
@@ -44,7 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
             return; // No open text editor
         }
 
-        const selection = editor.selection;
+        //const selection = editor.selection;
         // const text = editor.document.getText(selection);
         const position = editor.selection.active;
         console.log(`editor.selection.active.line: ${position.line}`);
@@ -72,13 +73,18 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     const nextSymbolCommand = vscode.commands.registerCommand('extension.jump.nextSymbol', async () => {
-        console.log(`Command nextSymbol triggered!`);
         updateCursorPosition(symbols.nextSymbolPosition);
     });
     const previousSymbolCommand = vscode.commands.registerCommand('extension.jump.previousSymbol', async () => {
-        console.log(`Command previousSymbol triggered!`);
         updateCursorPosition(symbols.previousSymbolPosition);
     });
+    const nextSymbolCommandSameScope = vscode.commands.registerCommand('extension.jump.nextSymbolSameScope', async () => {
+        updateCursorPosition(symbols.nextSymbolPositionSameScope);
+    });
+    const previousSymbolCommandSameScope = vscode.commands.registerCommand('extension.jump.previousSymbolSameScope', async () => {
+        updateCursorPosition(symbols.previousSymbolPositionSameScope);
+    });
+    
     const nextLocalChangeCommand = vscode.commands.registerCommand('extension.jump.nextLocalChange', async () => {
         console.log(`Command nextLocalChange triggered!`);
     });
@@ -90,6 +96,8 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(sayHelloCommand,
         nextSymbolCommand,
         previousSymbolCommand,
+        nextSymbolCommandSameScope,
+        previousSymbolCommandSameScope,
         nextLocalChangeCommand,
         previousLocalChangeCommand);
 }

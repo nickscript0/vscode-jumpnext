@@ -24,6 +24,16 @@ export function activate(context: vscode.ExtensionContext) {
 
     console.log('Congratulations, your extension "jumpnext" is now active!');
 
+    const gitEnabled = vscode.workspace.getConfiguration('git', null!).get<boolean>('enabled', true);
+    if (!gitEnabled) {
+        console.log(`Jump next local change is not available as this project does not have git available -- "git.enabled": false`);
+
+        // Custom property we can reference when checking whether to run git features
+        context.workspaceState.update('git.enabled', false);
+    } else {
+        console.log(`GIT IS AVAILABLE!`);
+    }
+
     // Register event handlers
     vscode.workspace.onDidSaveTextDocument(d => console.log(`onDidSaveTextDocument event fired`));
     vscode.workspace.onDidChangeWorkspaceFolders(d => console.log(`onDidChangeWorkspaceFolders event fired`));
@@ -62,29 +72,21 @@ export function activate(context: vscode.ExtensionContext) {
         //     position.line
         // }
 
-        await git.gitTest();
-        const symbolList = await symbols.getSymbols(editor.document);
-        if (symbolList) {
-            const symbolListStrings = symbolList.map(s => `container=${s.containerName}, kind=${s.kind}, location.uri.path=${s.location.uri.path}, location.start.line=${s.location.range.start.line} name=${s.name},`);
-            console.log(`SYMBOLS IS: ${symbolListStrings.join('\n')}`);
-        } else {
-            console.log(`No symbols found!`);
-        }
     });
 
     const nextSymbolCommand = vscode.commands.registerCommand('extension.jump.nextSymbol', async () => {
-        updateCursorPosition(symbols.nextSymbolPosition);
+        symbols.updateCursorPosition(symbols.nextSymbolPosition);
     });
     const previousSymbolCommand = vscode.commands.registerCommand('extension.jump.previousSymbol', async () => {
-        updateCursorPosition(symbols.previousSymbolPosition);
+        symbols.updateCursorPosition(symbols.previousSymbolPosition);
     });
     const nextSymbolCommandSameScope = vscode.commands.registerCommand('extension.jump.nextSymbolSameScope', async () => {
-        updateCursorPosition(symbols.nextSymbolPositionSameScope);
+        symbols.updateCursorPosition(symbols.nextSymbolPositionSameScope);
     });
     const previousSymbolCommandSameScope = vscode.commands.registerCommand('extension.jump.previousSymbolSameScope', async () => {
-        updateCursorPosition(symbols.previousSymbolPositionSameScope);
+        symbols.updateCursorPosition(symbols.previousSymbolPositionSameScope);
     });
-    
+
     const nextLocalChangeCommand = vscode.commands.registerCommand('extension.jump.nextLocalChange', async () => {
         console.log(`Command nextLocalChange triggered!`);
     });
@@ -97,24 +99,15 @@ export function activate(context: vscode.ExtensionContext) {
         nextSymbolCommand,
         previousSymbolCommand,
         nextSymbolCommandSameScope,
-        previousSymbolCommandSameScope,
-        nextLocalChangeCommand,
-        previousLocalChangeCommand);
+        previousSymbolCommandSameScope);
+
+    if (gitEnabled) {
+        context.subscriptions.push(nextLocalChangeCommand, previousLocalChangeCommand);
+    }
+
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {
 }
 
-async function updateCursorPosition(newPositionFunc: symbols.NewPositionFunc) {
-    const editor = vscode.window.activeTextEditor;
-    if (editor) {
-        const newPosition = await newPositionFunc(editor.document, editor.selection.active);
-        const newSelection = new vscode.Selection(newPosition, newPosition);
-        // Move the cursor
-        editor.selection = newSelection;
-        // Move the editor window
-        editor.revealRange(newSelection, vscode.TextEditorRevealType.Default);
-        console.log(`Moved cursor to line ${newPosition.line}`);
-    }
-}

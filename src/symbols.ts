@@ -1,7 +1,21 @@
 import * as vscode from 'vscode';
 
+export async function updateCursorPosition(newPositionFunc: NewPositionFunc) {
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+        const newPosition = await newPositionFunc(editor.document, editor.selection.active);
+        const newSelection = new vscode.Selection(newPosition, newPosition);
+        // Move the cursor
+        editor.selection = newSelection;
+        // Move the editor window
+        editor.revealRange(newSelection, vscode.TextEditorRevealType.Default);
+        console.log(`Moved cursor to line ${newPosition.line}`);
+    }
+}
+
+
 // TODO: this could be cached per openPage, on pageOpen and pageChange events
-export async function getSymbols(document: vscode.TextDocument) {
+async function getSymbols(document: vscode.TextDocument) {
     const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>('vscode.executeDocumentSymbolProvider', document.uri);
     if (!symbols) return [];
     return symbols //.filter(s => SYMBOL_WHITELIST.includes(s.kind));
@@ -60,6 +74,7 @@ function _symbolsArrToPosition(index: number, symbols: vscode.SymbolInformation[
     if (index > -1 && symbols[index] && symbols[index].location) {
         line = symbols[index].location.range.start.line;
         character = symbols[index].location.range.start.character;
+        // TODO: display the current symbol type in a tooltip or in window footer?
         console.log(`Current symbol kind=${SymbolStrings[symbols[index].kind]}, container=${symbols[index].containerName}`);
     }
     return new vscode.Position(line, character);

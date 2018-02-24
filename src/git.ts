@@ -25,6 +25,52 @@ export class GitDiffCache {
     }
 }
 
+/*
+index 9f6adbf..4c7fe70 100644
+--- a/scripts/src/CoinMarketCap.ts
++++ b/scripts/src/CoinMarketCap.ts
+@@ -63,8 +63,8 @@ async function _getPrice(url) {
+     return Big(JSON.parse((await request(url)).text)[0].price_cad);
+ }
+ 
+-export async function getPricesRaw(): Promise<PricesRaw> {
+-    const uBTC = `https://api.coinmarketcap.com/v1/ticker/bitcoin/?convert=CAD`;
++export async function getPricesRaw(): aPromise<PricesRaw> {
++    abcconst uBTC = `https://api.coinmarketcap.com/v1/ticker/bitcoin/?convert=CAD`;
+     const uLTC = `https://api.coinmarketcap.com/v1/ticker/litecoin/?convert=CAD`;
+     const uETH = `https://api.coinmarketcap.com/v1/ticker/ethereum/?convert=CAD`;
+     const uRAI = `https://api.coinmarketcap.com/v1/ticker/raiblocks/?convert=CAD`;
+@@ -84,5 +84,5 @@ export async function getPricesRaw(): Promise<PricesRaw> {
+ }
+ 
+ async function _getPriceRaw(url) {
+-    return JSON.parse((await request(url)).text)[0];
++    return JSON.parse((a2wait request(url)).text)[0];
+ }
+\ No newline at end of file
+diff --git a/web/tsconfig.json b/web/tsconfig.json
+index 2bd7781..be12ec3 100644
+--- a/web/tsconfig.json
++++ b/web/tsconfig.json
+@@ -1,5 +1,5 @@
+ {
+-    "compilerOptions": {
++    "DEBUGcompilerOptions": {
+         "target": "es2016",
+         "module": "commonjs",
+         "sourceMap": true,
+*/
+
+// Algo: 
+// Repeat the following for each +++ instance
+//  - Parse the file path from the +++ line
+//  - Find each @@, parse line number, until the next +++ or EOF is reached
+
+function parseDiff() {
+
+}
+
+
 async function gitDiff() {
 
     // TODO DETERMINE HOW explorerCommands.ts in git-lens repo sets repoPath

@@ -34,11 +34,21 @@ export function activate(context: vscode.ExtensionContext) {
         console.log(`GIT IS AVAILABLE!`);
     }
 
+    const gitDiffCache = new git.GitDiffCache();
     // Register event handlers
-    vscode.workspace.onDidSaveTextDocument(d => console.log(`onDidSaveTextDocument event fired`));
-    vscode.workspace.onDidChangeWorkspaceFolders(d => console.log(`onDidChangeWorkspaceFolders event fired`));
+    vscode.workspace.onDidSaveTextDocument(d => {
+        console.log(`onDidSaveTextDocument event fired`)
+        gitDiffCache.update();
+    });
+    vscode.workspace.onDidChangeWorkspaceFolders(d => {
+        console.log(`onDidChangeWorkspaceFolders event fired`);
+        gitDiffCache.update();
+    });
     // TODO: could maybe skip the openTextDocument event for efficiency and instead just populate the gitCache on startup
-    vscode.workspace.onDidOpenTextDocument(d => console.log(`onDidOpenTextDocument event fired`));
+    vscode.workspace.onDidOpenTextDocument(d => {
+        console.log(`onDidOpenTextDocument event fired`);
+        gitDiffCache.update();
+    });
 
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with  registerCommand

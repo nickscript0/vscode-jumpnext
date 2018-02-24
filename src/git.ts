@@ -5,7 +5,27 @@ import * as shell from './shell';
 //     // TODO: run git diff on save
 // }
 
-export async function gitTest() {
+export class GitDiffCache {
+    private diffText: string;
+
+
+    constructor() {
+        this.diffText = '';
+    }
+
+    async update() {
+        const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
+        console.log(`rootPath: ${rootPath}`);
+        if (rootPath) {
+            this.diffText = await shell.runCommand('git', ['diff'], { cwd: rootPath });
+            console.log(`git diff: ${this.diffText}`);
+        } else {
+            console.log(`You do not have a workspace folder open so we can't determine your root path`);
+        }
+    }
+}
+
+async function gitDiff() {
 
     // TODO DETERMINE HOW explorerCommands.ts in git-lens repo sets repoPath
     // e.g. :
@@ -27,8 +47,8 @@ export async function gitTest() {
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
     console.log(`rootPath: ${rootPath}`);
     if (rootPath) {
-        const diffResult = await shell.runCommand('git', ['status'], { cwd: rootPath });
-        console.log(`git status: ${diffResult}`);
+        const diffResult = await shell.runCommand('git', ['diff'], { cwd: rootPath });
+        console.log(`git diff: ${diffResult}`);
     } else {
         console.log(`You do not have a workspace folder open so we can't determine your root path`);
     }

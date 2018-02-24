@@ -1,29 +1,61 @@
 import * as vscode from 'vscode';
 import * as shell from './shell';
+import {Change, parseDiff} from './git-diff';
 
 // function refreshGitCache(document: vscode.TextDocument | vscode.WorkspaceFoldersChangeEvent) {
 //     // TODO: run git diff on save
 // }
 
+
+
 export class GitDiffCache {
     private diffText: string;
-
+    private changes: Change[];
 
     constructor() {
         this.diffText = '';
-    }
-
-    async update() {
-        const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
-        console.log(`rootPath: ${rootPath}`);
-        if (rootPath) {
-            this.diffText = await shell.runCommand('git', ['diff'], { cwd: rootPath });
-            console.log(`git diff: ${this.diffText}`);
-        } else {
-            console.log(`You do not have a workspace folder open so we can't determine your root path`);
-        }
+        this.changes = [];
     }
 }
+
+// Algo: 
+// Repeat the following for each +++ instance
+//  - Parse the file path from the +++ line
+//  - Find each @@, parse line number, until the next +++, @@, or EOF is reached
+// export function parseDiff(diffText: string): Change[] {
+//     const changes: Change[] = [];
+//     for (const line of diffText.split('\n')) {
+//         let currentChange: Change | null = null;
+//         if (line.startsWith('+++')) {
+//             if (currentChange !== null) {
+//                 changes.push(currentChange);
+//             }
+//             currentChange = {
+//                 filename: line.split('b/')[1],
+//                 lines: []
+//             }
+//         } else if (currentChange !== null && line.startsWith('@@')) {
+//             // Assumes @@ lines of the form: @@ -63,8 +63,8 @@ ...
+//             const lineChangeNum = parseInt(line.split('@@ -')[1].split(',')[0]);
+//             (currentChange as Change).lines.push(lineChangeNum);
+
+//         }
+//     }
+//     return changes;
+// }
+
+export async function gitDiffCommand(): Promise<string | null> {
+    const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
+    console.log(`rootPath: ${rootPath}`);
+    if (rootPath) {
+        const diffText = await shell.runCommand('git', ['diff'], { cwd: rootPath });
+        console.log(`git diff: ${diffText}`);
+        return diffText
+    } else {
+        console.log(`You do not have a workspace folder open so we can't determine your root path`);
+        return null;
+    }
+}    
 
 /*
 index 9f6adbf..4c7fe70 100644
@@ -60,16 +92,6 @@ index 2bd7781..be12ec3 100644
          "module": "commonjs",
          "sourceMap": true,
 */
-
-// Algo: 
-// Repeat the following for each +++ instance
-//  - Parse the file path from the +++ line
-//  - Find each @@, parse line number, until the next +++ or EOF is reached
-
-function parseDiff() {
-
-}
-
 
 async function gitDiff() {
 

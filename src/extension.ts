@@ -39,18 +39,18 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidSaveTextDocument(d => {
         console.log(`onDidSaveTextDocument event fired`)
         // TODO: should be await or then?
-        gitDiffCache.update();
+        // gitDiffCache.update();
     });
     vscode.workspace.onDidChangeWorkspaceFolders(d => {
         console.log(`onDidChangeWorkspaceFolders event fired`);
         // TODO: should be await or then?
-        gitDiffCache.update();
+        // gitDiffCache.update();
     });
     // TODO: could maybe skip the openTextDocument event for efficiency and instead just populate the gitCache on startup
     vscode.workspace.onDidOpenTextDocument(d => {
         console.log(`onDidOpenTextDocument event fired`);
         // TODO: should be await or then?
-        gitDiffCache.update();
+        // gitDiffCache.update();
     });
 
     // The command has been defined in the package.json file

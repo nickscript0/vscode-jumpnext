@@ -1,4 +1,4 @@
-import {parseDiff} from '../git-diff';
+import { parseDiff } from '../git-diff';
 import * as assert from 'assert';
 
 describe('git', () => {
@@ -9,14 +9,14 @@ describe('git', () => {
         // });
         it('should parse diff example A', () => {
             const res = parseDiff(DIFF_A);
-            assert.equal(res.length, 2);
+            assert.equal(res.length, 3);
             assert.equal(res[0].filename, 'scripts/src/testapi123.ts');
-            assert.equal(res[0].lines, [66, 87]);
-            assert.equal(res[0].filename, 'web/index.html');
-            assert.equal(res[0].lines, [2, 41]);
-            assert.equal(res[0].filename, 'web/tsconfig.json');
-            assert.equal(res[0].lines, [2]);            
-        });        
+            assert.deepEqual(res[0].lines, [66, 87]);
+            assert.equal(res[1].filename, 'web/index.html');
+            assert.deepEqual(res[1].lines, [2, 41]);
+            assert.equal(res[2].filename, 'web/tsconfig.json');
+            assert.deepEqual(res[2].lines, [2]);
+        });
     });
 });
 

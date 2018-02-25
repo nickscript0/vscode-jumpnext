@@ -9,27 +9,42 @@ export interface Change {
 //  - Find each @@, parse line number, until the next +++, @@, or EOF is reached
 export function parseDiff(diffText: string): Change[] {
     const changes: Change[] = [];
-    for (const line of diffText.split('\n')) {
-        let currentChange: Change | null = null;
-        console.log(`CURRENT: ${line}`);
-        if (line.startsWith('+++')) {
-            console.log(`current line +++ MATCH!!! ${line}`);
-            
+    let currentChange: Change | null = null;
+    let startAbsoluteDiffLine: number | null = null;
+    let startRelativeDiffLine: number | null = null;
+
+    const lines = diffText.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.startsWith('+++ b/')) {
+            startAbsoluteDiffLine = null;
+            startRelativeDiffLine = null;
             if (currentChange !== null) {
                 changes.push(currentChange);
             }
             currentChange = {
-                filename: line.split('b/')[1],
+                filename: line.split('b/').slice(1).join('b/'),
                 lines: []
             }
         } else if (currentChange !== null && line.startsWith('@@')) {
-            console.log(`current line @@ MATCH!!! ${line}`);
-            
             // Assumes @@ lines of the form: @@ -63,8 +63,8 @@ ...
-            const lineChangeNum = parseInt(line.split('@@ -')[1].split(',')[0]);
-            (currentChange as Change).lines.push(lineChangeNum);
-
+            startAbsoluteDiffLine = parseInt(line.split('@@ -')[1].split(',')[0]);
+            startRelativeDiffLine = i + 1;
+        } else if (currentChange !== null && startAbsoluteDiffLine !== null && startRelativeDiffLine !== null
+            && /^[-+](?!\+\+ b)/.test(line)) {
+            // Match a line that starts with - or + but not followed by "++ b"
+            const linesFromStartOfDiff = i - startRelativeDiffLine;
+            // TODO: VSC or Typescript bug? [ts] 'calculatedLineNum' is declared but its value is never read.
+            const calculatedLineNum = linesFromStartOfDiff + startAbsoluteDiffLine;
+            currentChange.lines.push(calculatedLineNum);
+            startRelativeDiffLine = null;
         }
     }
+
+    if (currentChange !== null) changes.push(currentChange);
+
+    // const allChangesText = changes.map(c => `${c.filename}: ${c.lines.join(', ')}`);
+    // console.log(`All Changes: ${allChangesText.join('\n')}`);
+
     return changes;
 }

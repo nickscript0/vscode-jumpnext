@@ -3,10 +3,10 @@ export interface Change {
     lines: number[];
 }
 
-// Algo: 
-// Repeat the following for each +++ instance
+// Algorithm: Repeat the following for each +++ instance
 //  - Parse the file path from the +++ line
-//  - Find each @@, parse line number, until the next +++, @@, or EOF is reached
+//  - Find each @@, parse line number, find the next line that starts 
+//    with - or + but not followed by "++ b", calculate and record the absolute line number
 export function parseDiff(diffText: string): Change[] {
     const changes: Change[] = [];
     let currentChange: Change | null = null;
@@ -42,9 +42,5 @@ export function parseDiff(diffText: string): Change[] {
     }
 
     if (currentChange !== null) changes.push(currentChange);
-
-    // const allChangesText = changes.map(c => `${c.filename}: ${c.lines.join(', ')}`);
-    // console.log(`All Changes: ${allChangesText.join('\n')}`);
-
     return changes;
 }

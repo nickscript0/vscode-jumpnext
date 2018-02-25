@@ -9,7 +9,7 @@ export async function updateCursorPosition(newPositionFunc: NewPositionFunc) {
         editor.selection = newSelection;
         // Move the editor window
         editor.revealRange(newSelection, vscode.TextEditorRevealType.Default);
-        console.log(`Moved cursor to line ${newPosition.line}`);
+        // console.log(`Moved cursor to line ${newPosition.line}`);
     }
 }
 
@@ -75,7 +75,7 @@ function _symbolsArrToPosition(index: number, symbols: vscode.SymbolInformation[
         line = symbols[index].location.range.start.line;
         character = symbols[index].location.range.start.character;
         // TODO: display the current symbol type in a tooltip or in window footer?
-        console.log(`Current symbol kind=${SymbolStrings[symbols[index].kind]}, container=${symbols[index].containerName}`);
+        // console.log(`Current symbol kind=${SymbolStrings[symbols[index].kind]}, container=${symbols[index].containerName}`);
     }
     return new vscode.Position(line, character);
 }

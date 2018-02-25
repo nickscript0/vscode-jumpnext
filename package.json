@@ -17,10 +17,6 @@
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
-            },
-            {
                 "command": "extension.jump.nextSymbol",
                 "title": "Next Symbol",
                 "category": "JumpNext"

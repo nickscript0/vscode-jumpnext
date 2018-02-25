@@ -26,19 +26,19 @@ export class GitDiffCache {
 
     nextPosition(fp: FilePosition): FilePosition | undefined {
         const newPos = this.diffIndex.findNextPosition(fp);
-        console.log(`nextPosition: ${printFp(fp)} --> ${printFp(newPos)}`);
+        // console.log(`nextPosition: ${printFp(fp)} --> ${printFp(newPos)}`);
         return newPos;
     }
     previousPosition(fp: FilePosition): FilePosition | undefined {
         const newPos = this.diffIndex.findPreviousPosition(fp);
-        console.log(`previousPosition: ${printFp(fp)} --> ${printFp(newPos)}`);
+        // console.log(`previousPosition: ${printFp(fp)} --> ${printFp(newPos)}`);
         return newPos;
     }
 
 }
 
 function printFp(fp: FilePosition | undefined) {
-    return `path=[${fp && fp.relativePath} line=${fp && fp.line}]`;
+    return `[path=${fp && fp.relativePath} line=${fp && fp.line}]`;
 }
 
 class DiffIndex {
@@ -51,6 +51,7 @@ class DiffIndex {
     }
 
     update(changes: Change[]) {
+        this.changesByFile.clear();
         changes.forEach(change => this.changesByFile.set(change.filename, change.lines));
         this.fileKeys = Array.from(this.changesByFile.keys());
     }
@@ -158,11 +159,10 @@ function findLastIndex<T>(arr: Array<T>, predicate: (value: T) => boolean) {
 
 async function gitDiffCommand(): Promise<string | null> {
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
-    // console.log(`rootPath: ${rootPath}`);
     if (rootPath) {
+        console.log(`shell: git diff`);
         const diffText = await shell.runCommand('git', ['diff'], { cwd: rootPath });
-        // console.log(`git diff: ${diffText}`);
-        return diffText
+        return diffText;
     } else {
         console.log(`You do not have a workspace folder open so we can't determine your root path`);
         return null;

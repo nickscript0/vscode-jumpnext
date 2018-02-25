@@ -4,6 +4,7 @@
 Adds the ability to move your cursor to the next (or previous) code symbol (e.g. functions, methods, imports, ...) or local git change.
 
 The available commands are:
+
 | Command | Keyboard Shortcut |
 | --- | --- |
 | Previous Symbol | `ctrl+[` |

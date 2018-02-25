@@ -1,7 +1,6 @@
 # Change Log
 All notable changes to the "jumpnext" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
+## [1.0.0] - 2018-02-25
 - Initial release
+- Added commands for Next Symbol, Next Symbol - Same Scope, Previous Symbol, Previous Symbol - Same Scope, Next Local Change, Previous Local Change

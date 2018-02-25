@@ -1,21 +1,57 @@
 import * as vscode from 'vscode';
 import * as shell from './shell';
-import {Change, parseDiff} from './git-diff';
+import { Change, parseDiff } from './git-diff';
 
 // function refreshGitCache(document: vscode.TextDocument | vscode.WorkspaceFoldersChangeEvent) {
 //     // TODO: run git diff on save
 // }
 
 
+interface FilePosition {
+    relativePath: string;
+    cursorPosition: vscode.Position;
+}
 
 export class GitDiffCache {
     private diffText: string;
     private changes: Change[];
+    private changesByFile: Map<string, number[]>;
 
     constructor() {
         this.diffText = '';
         this.changes = [];
+        this.changesByFile = new Map();
     }
+
+    async update() {
+        const diffRaw = await gitDiffCommand();
+        if (diffRaw) {
+            this.changes = parseDiff(diffRaw);
+            this.changesByFile = new Map(); // TODO: Memory leak?
+            this.changes.forEach(change => this.changesByFile.set(change.filename, change.lines));
+            this.diffText = diffRaw;
+        }
+    }
+
+    nextPosition(currentPosition: vscode.Position, relFilePath: string): FilePosition {
+        let relativePath = this.changes[0].filename;
+        let cursorPosition = new vscode.Position(0, 0);
+        const currentFileLines = this.changesByFile.get(relFilePath);
+        if (currentFileLines) {
+            currentFileLines.findIndex(line => currentPosition > )
+        }
+        return {
+            relativePath,
+            cursorPosition
+        };
+    }
+}
+
+class DiffIndex {
+    private changes: Change[];
+    private changesByFile: Map<string, number[]>;
+    private     
+
 }
 
 // Algo: 
@@ -55,7 +91,7 @@ export async function gitDiffCommand(): Promise<string | null> {
         console.log(`You do not have a workspace folder open so we can't determine your root path`);
         return null;
     }
-}    
+}
 
 /*
 index 9f6adbf..4c7fe70 100644

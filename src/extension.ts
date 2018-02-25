@@ -14,6 +14,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import * as git from './git';
 import * as symbols from './symbols';
@@ -85,6 +86,10 @@ export function activate(context: vscode.ExtensionContext) {
         //     position.line
         // }
 
+        console.log(`URI IS: uri.path=${editor.document.uri.path} uri.fspath=${editor.document.uri.fsPath}`);
+        // const a = editor.document.uri.with({path: 'abc'});
+        editor.document
+
     });
 
     const nextSymbolCommand = vscode.commands.registerCommand('extension.jump.nextSymbol', async () => {
@@ -124,3 +129,33 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
 }
 
+async function openDocument(relFilename: string, cursorPosition: vscode.Position) {
+    // const doc1 = vscode.workspace.textDocuments[0]; //showTextDocument()
+    // const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
+    const baseDir = getBaseDir();
+    if (baseDir) {
+        const filename = path.join(baseDir, relFilename);
+        // Open the filepath
+        const doc = await vscode.workspace.openTextDocument(filename);
+        // Move the cursor
+        const newSelection = new vscode.Selection(cursorPosition, cursorPosition);
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return; // No open text editor
+        }
+        editor.selection = newSelection;        
+        vscode.window.showTextDocument(doc);
+        
+    }
+}
+
+function currentRelFilepath() {
+    const fname = vscode.window.activeTextEditor && vscode.window.activeTextEditor.document.uri.path;
+    const baseDir = getBaseDir();
+    return fname && baseDir ? fname.split(baseDir)[1] : undefined;
+}
+
+function getBaseDir() {
+    // TODO: test this with multiple workspace folders open
+    return vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
+}

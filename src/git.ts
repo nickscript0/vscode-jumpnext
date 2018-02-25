@@ -31,7 +31,7 @@ export class GitDiffCache {
     }
     previousPosition(fp: FilePosition): FilePosition | undefined {
         const newPos = this.diffIndex.findPreviousPosition(fp);
-        console.log(`nextPosition: ${printFp(fp)} --> ${printFp(newPos)}`);
+        console.log(`previousPosition: ${printFp(fp)} --> ${printFp(newPos)}`);
         return newPos;
     }
 
@@ -43,39 +43,38 @@ function printFp(fp: FilePosition | undefined) {
 
 class DiffIndex {
     private changesByFile: Map<string, number[]>;
-
+    private fileKeys: string[];
 
     constructor() {
         this.changesByFile = new Map();
+        this.fileKeys = [];
     }
 
     update(changes: Change[]) {
         changes.forEach(change => this.changesByFile.set(change.filename, change.lines));
+        this.fileKeys = Array.from(this.changesByFile.keys());
     }
 
     private firstPosition(): FilePosition | undefined {
-        const keys = Array.from(this.changesByFile.keys());
-        const firstPath = keys[0];
+        const firstPath = this.fileKeys[0];
         const firstFileChanges = this.changesByFile.get(firstPath)
         return firstFileChanges ? { relativePath: firstPath, line: firstFileChanges[0] } : undefined;
     }
 
     private lastPosition(): FilePosition | undefined {
-        const keys = Array.from(this.changesByFile.keys());
-        const lastPath = keys.slice(-1)[0];
+        const lastPath = this.fileKeys.slice(-1)[0];
         const lastFileChanges = this.changesByFile.get(lastPath)
         return lastFileChanges ? { relativePath: lastPath, line: lastFileChanges.slice(-1)[0] } : undefined;
     }
 
     private firstLineNextFile(currentPosition: FilePosition): FilePosition | undefined {
-        const keys = Array.from(this.changesByFile.keys());
-        const nextFileIndex = keys.findIndex(fn => fn === currentPosition.relativePath) + 1;
+        const nextFileIndex = this.fileKeys.findIndex(fn => fn === currentPosition.relativePath) + 1;
         if (nextFileIndex - 1 === -1) throw Error('What? Shouldnt be');
 
         let relativePath = undefined; // = currentPosition.relativePath; // Default to current
         let line = undefined; // = currentPosition.line; // Default to current
-        if (nextFileIndex < keys.length) {
-            const newFilepath = keys[nextFileIndex];
+        if (nextFileIndex < this.fileKeys.length) {
+            const newFilepath = this.fileKeys[nextFileIndex];
             const nextFileChanges = this.changesByFile.get(newFilepath);
             if (nextFileChanges) {
                 relativePath = newFilepath;
@@ -86,14 +85,13 @@ class DiffIndex {
     }
 
     private lastLinePreviousFile(currentPosition: FilePosition): FilePosition | undefined {
-        const keys = Array.from(this.changesByFile.keys());
-        const previousFileIndex = keys.findIndex(fn => fn === currentPosition.relativePath) - 1;
+        const previousFileIndex = this.fileKeys.findIndex(fn => fn === currentPosition.relativePath) - 1;
         if (previousFileIndex + 1 === -1) throw Error('What? Shouldnt be');
 
         let relativePath = undefined; // = currentPosition.relativePath;
         let line = undefined; // = currentPosition.line;
         if (previousFileIndex > -1) {
-            const newFilepath = keys[previousFileIndex];
+            const newFilepath = this.fileKeys[previousFileIndex];
             const previousFileChanges = this.changesByFile.get(newFilepath);
             if (previousFileChanges) {
                 relativePath = newFilepath;

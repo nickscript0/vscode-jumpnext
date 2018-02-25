@@ -3,10 +3,11 @@ import * as assert from 'assert';
 
 describe('git', () => {
     describe('parseDiff', () => {
-        // it('should parse invalid diff', () => {
-        //     const res = parseDiff('abc');
-        //     assert.equal(res.length, 0);
-        // });
+        it('should parse invalid diff', () => {
+            const res = parseDiff('abc');
+            assert.equal(res.length, 0);
+        });
+
         it('should parse diff example A', () => {
             const res = parseDiff(DIFF_A);
             assert.equal(res.length, 3);

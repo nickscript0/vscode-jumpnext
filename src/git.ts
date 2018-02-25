@@ -7,52 +7,276 @@ import { Change, parseDiff } from './git-diff';
 // }
 
 
-interface FilePosition {
+export interface FilePosition {
     relativePath: string;
-    cursorPosition: vscode.Position;
+    line: number;
 }
 
 export class GitDiffCache {
     private diffText: string;
     private changes: Change[];
-    private changesByFile: Map<string, number[]>;
+    // private changesByFile: Map<string, number[]>;
+    private diffIndex: DiffIndex;
 
     constructor() {
         this.diffText = '';
         this.changes = [];
-        this.changesByFile = new Map();
+        // this.changesByFile = new Map();
+        this.diffIndex = new DiffIndex();
     }
 
     async update() {
         const diffRaw = await gitDiffCommand();
         if (diffRaw) {
             this.changes = parseDiff(diffRaw);
-            this.changesByFile = new Map(); // TODO: Memory leak?
-            this.changes.forEach(change => this.changesByFile.set(change.filename, change.lines));
+            // this.changesByFile = new Map(); // TODO: Memory leak?
+            // this.changes.forEach(change => this.changesByFile.set(change.filename, change.lines));
             this.diffText = diffRaw;
+            this.diffIndex.update(this.changes);
         }
     }
 
-    nextPosition(currentPosition: vscode.Position, relFilePath: string): FilePosition {
-        let relativePath = this.changes[0].filename;
-        let cursorPosition = new vscode.Position(0, 0);
-        const currentFileLines = this.changesByFile.get(relFilePath);
-        if (currentFileLines) {
-            currentFileLines.findIndex(line => currentPosition > )
-        }
-        return {
-            relativePath,
-            cursorPosition
-        };
+
+
+    nextPosition(fp: FilePosition): FilePosition | undefined {
+        const newPos = this.diffIndex.findNextPosition(fp);
+        console.log(`nextPosition: ${printFp(fp)} --> ${printFp(newPos)}`);
+        return newPos;
+        // let nextRelativePath = this.changes[0].filename;
+        // let nextLine = 0; //new vscode.Position(0, 0);
+
+        // return this.diffIndex.nextPosition(fp.line, fp.relativePath);
+        // const currentRelativePath = fp.relativePath;
+        // const currentLine = fp.line;
+
+        // const currentFileLines = this.changesByFile.get(currentRelativePath);
+        // if (currentFileLines) {
+        //     const nextRelativePath = currentRelativePath;
+        //     const nextIndex = currentFileLines.findIndex(line => line > currentLine);
+        //     if (nextIndex > -1) {
+        //         // Current file
+        //         const nextLine = currentFileLines[nextIndex];
+        //         return {
+        //             relativePath: nextRelativePath,
+        //             line: nextLine
+        //         };
+        //     } else {
+        //         // Next File and Next Line
+        //         const nextFileIndex = this.changes.findIndex(c => c.filename === currentRelativePath) + 1;
+        //         if (nextFileIndex > 0) {
+        //             if (nextFileIndex < this.changes.length) {
+        //                 const a = {
+        //                     relativePath: this.changes[nextFileIndex].filename,
+        //                     line: this.changes[nextFileIndex].lines[0]
+        //                 };
+        //                 return a;
+        //             } else {
+        //                 // No files left
+        //                 return undefined;
+        //             }
+
+        //         } else {
+        //             // Default to very start of git diffs
+        //             return {
+        //                 relativePath: this.changes[0].filename,
+        //                 line: 0
+        //             }
+        //         }
+        //     }
+
+        // }
+        // return undefined;
+
     }
+    previousPosition(fp: FilePosition): FilePosition | undefined {
+        const newPos = this.diffIndex.findPreviousPosition(fp);
+        console.log(`nextPosition: ${printFp(fp)} --> ${printFp(newPos)}`);
+        return newPos;
+
+
+        // return this.diffIndex.previousPosition(fp.line, fp.relativePath);
+        // const currentRelativePath = fp.relativePath;
+        // const currentLine = fp.line;
+
+        // const currentFileLines = this.changesByFile.get(currentRelativePath);
+        // if (currentFileLines) {
+        //     const previousRelativePath = currentRelativePath;
+        //     const previousIndex = findLastIndex(currentFileLines, line => line > currentLine);
+        //     if (previousIndex > -1) {
+        //         // Current file
+        //         const previousLine = currentFileLines[previousIndex];
+        //         return {
+        //             relativePath: previousRelativePath,
+        //             line: previousLine
+        //         };
+        //     } else {
+        //         // Previous File and Line
+        //         const previousFileIndex = this.changes.findIndex(c => c.filename === currentRelativePath) - 1;
+        //         if (previousFileIndex > -1) {
+        //             if (previousFileIndex === -2) return undefined;
+        //             return {
+        //                 relativePath: this.changes[previousFileIndex].filename,
+        //                 line: this.changes[previousFileIndex].lines.slice(-1)[0]
+        //             }
+        //         } else {
+        //             // Default to very end of git diffs
+        //             return {
+        //                 relativePath: this.changes[this.changes.length - 1].filename,
+        //                 line: this.changes[this.changes.length - 1].lines.slice(-1)[0]
+        //             }
+        //         }
+        //     }
+
+        // }
+        // return undefined;
+    }
+
+}
+
+function printFp(fp: FilePosition | undefined) {
+    return `path=[${fp && fp.relativePath} line=${fp && fp.line}]`;
 }
 
 class DiffIndex {
-    private changes: Change[];
+    private flatFilePositions: FilePosition[];
     private changesByFile: Map<string, number[]>;
-    private     
+
+
+    constructor() {
+        this.flatFilePositions = [];
+        this.changesByFile = new Map();
+    }
+
+    update(changes: Change[]) {
+        this.flatFilePositions = [];
+        changes.forEach(change => this.changesByFile.set(change.filename, change.lines));
+    }
+
+    private firstLineNextFile(currentPosition: FilePosition): FilePosition {
+        const keys = Array.from(this.changesByFile.keys());
+        const nextFileIndex = keys.findIndex(fn => fn === currentPosition.relativePath) + 1;
+        if (nextFileIndex - 1 === -1) throw Error('What? Shouldnt be');
+
+        let relativePath = currentPosition.relativePath; // Default to current
+        let line = currentPosition.line; // Default to current
+        if (nextFileIndex < keys.length) {
+            const newFilepath = keys[nextFileIndex];
+            const nextFileChanges = this.changesByFile.get(newFilepath);
+            if (nextFileChanges) {
+                relativePath = newFilepath;
+                line = nextFileChanges[0];
+            }
+        }
+        return {
+            relativePath,
+            line
+        }
+    }
+
+    private lastLinePreviousFile(currentPosition: FilePosition): FilePosition {
+        const keys = Array.from(this.changesByFile.keys());
+        const previousFileIndex = keys.findIndex(fn => fn === currentPosition.relativePath) - 1;
+        if (previousFileIndex + 1 === -1) throw Error('What? Shouldnt be');
+
+        let relativePath = currentPosition.relativePath;
+        let line = currentPosition.line;
+        if (previousFileIndex > -1) {
+            const newFilepath = keys[previousFileIndex];
+            const previousFileChanges = this.changesByFile.get(newFilepath);
+            if (previousFileChanges) {
+                relativePath = newFilepath;
+                line = previousFileChanges.slice(-1)[0]; // last line
+            }
+        }
+        return {
+            relativePath,
+            line
+        }
+    }
+
+    findNextPosition(currentPosition: FilePosition): FilePosition {
+        // Case: In a file with changes
+        const currentFileChanges = this.changesByFile.get(currentPosition.relativePath);
+        if (currentFileChanges) {
+            const nextIndex = currentFileChanges.findIndex(line => line > currentPosition.line);
+
+            // Case: next line in the current file
+            if (nextIndex > -1) {
+                return {
+                    relativePath: currentPosition.relativePath,
+                    line: currentFileChanges[nextIndex]
+                }
+
+            } else {
+                // Case: not in current file, advance to first entry of next file
+                return this.firstLineNextFile(currentPosition);
+            }
+
+        }
+        // Case: Not in a file with changes, advance to first in arr
+        return this.flatFilePositions[0];
+
+    }
+
+    findPreviousPosition(currentPosition: FilePosition): FilePosition {
+        // Case: In a file with changes
+        const currentFileChanges = this.changesByFile.get(currentPosition.relativePath);
+        if (currentFileChanges) {
+            const previousIndex = findLastIndex(currentFileChanges, line => line < currentPosition.line);
+
+            // Case: next line in the current file
+            if (previousIndex > -1) {
+                return {
+                    relativePath: currentPosition.relativePath,
+                    line: currentFileChanges[previousIndex]
+                }
+
+            } else {
+                // Case: not in current file, advance to first entry of previous file
+                return this.lastLinePreviousFile(currentPosition);
+            }
+
+        }
+        // Case: Not in a file with changes, advance to last in arr
+        return this.flatFilePositions.slice(-1)[0];
+
+    }
+
+    // findNext(currentLine: number, relFilePath: string): FilePosition | undefined {
+    //     const newIndex = this.flatFilePositions.findIndex(fp => fp.relativePath === relFilePath &&
+    //         fp.line > currentLine);
+    //     if (newIndex > -1) {
+    //         return {
+    //             relativePath: this.flatFilePositions[newIndex].relativePath,
+    //             line: this.flatFilePositions[newIndex].line
+    //         }
+    //     } else {
+    //         return undefined;
+    //     }
+
+    // }
+
+    // previousPosition(currentLine: number, relFilePath: string): FilePosition | undefined {
+    //     const newIndex = findLastIndex(this.flatFilePositions, fp => fp.relativePath === relFilePath &&
+    //         fp.line < currentLine);
+    //     if (newIndex > -1) {
+    //         return {
+    //             relativePath: this.flatFilePositions[newIndex].relativePath,
+    //             line: this.flatFilePositions[newIndex].line
+    //         }
+    //     } else {
+    //         return undefined;
+    //     }
+    // }
 
 }
+
+// Like Array.findIndex() but instead finds the lastIndex
+function findLastIndex<T>(arr: Array<T>, predicate: (value: T) => boolean) {
+    const firstReverseIndex = arr.slice().reverse().findIndex(predicate);
+    return (firstReverseIndex > -1) ? (arr.length - 1) - firstReverseIndex : -1;
+}
+
 
 // Algo: 
 // Repeat the following for each +++ instance
@@ -82,10 +306,10 @@ class DiffIndex {
 
 export async function gitDiffCommand(): Promise<string | null> {
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
-    console.log(`rootPath: ${rootPath}`);
+    // console.log(`rootPath: ${rootPath}`);
     if (rootPath) {
         const diffText = await shell.runCommand('git', ['diff'], { cwd: rootPath });
-        console.log(`git diff: ${diffText}`);
+        // console.log(`git diff: ${diffText}`);
         return diffText
     } else {
         console.log(`You do not have a workspace folder open so we can't determine your root path`);
@@ -149,10 +373,10 @@ async function gitDiff() {
 
     // console.log(`diffResult: ${diffResult}`);
     const rootPath = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0].uri.path;
-    console.log(`rootPath: ${rootPath}`);
+    // console.log(`rootPath: ${rootPath}`);
     if (rootPath) {
         const diffResult = await shell.runCommand('git', ['diff'], { cwd: rootPath });
-        console.log(`git diff: ${diffResult}`);
+        // console.log(`git diff: ${diffResult}`);
     } else {
         console.log(`You do not have a workspace folder open so we can't determine your root path`);
     }

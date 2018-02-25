@@ -79,14 +79,12 @@
             {
                 "command": "extension.jump.previousLocalChange",
                 "key": "ctrl+,",
-                "mac": "ctrl+,",
-                "when": "editorTextFocus"
+                "mac": "ctrl+,"
             },
             {
                 "command": "extension.jump.nextLocalChange",
                 "key": "ctrl+.",
-                "mac": "ctrl+.",
-                "when": "editorTextFocus"
+                "mac": "ctrl+."
             }
         ]
     },

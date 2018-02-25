@@ -57,7 +57,7 @@ export const previousSymbolPositionSameScope: NewPositionFunc = async (document,
 // Like Array.findIndex() but instead finds the lastIndex
 function findLastIndex<T>(arr: Array<T>, predicate: (value: T) => boolean) {
     const firstReverseIndex = arr.slice().reverse().findIndex(predicate);
-    return (arr.length - 1) - firstReverseIndex;
+    return (firstReverseIndex > -1) ? (arr.length - 1) - firstReverseIndex : -1;
 }
 
 async function _getNewSymbolPosition(document: vscode.TextDocument, currentPosition: vscode.Position,

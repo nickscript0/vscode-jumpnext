@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 
+// TODO: move this to editor.ts
 export async function updateCursorPosition(newPositionFunc: NewPositionFunc) {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
@@ -12,7 +13,6 @@ export async function updateCursorPosition(newPositionFunc: NewPositionFunc) {
         // console.log(`Moved cursor to line ${newPosition.line}`);
     }
 }
-
 
 // TODO: this could be cached per openPage, on pageOpen and pageChange events
 async function getSymbols(document: vscode.TextDocument) {

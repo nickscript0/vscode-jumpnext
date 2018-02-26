@@ -42,29 +42,11 @@ export function activate(context: vscode.ExtensionContext) {
         symbols.updateCursorPosition(symbols.previousSymbolPositionSameScope);
     });
 
-    const nextLocalChangeCommand = vscode.commands.registerCommand('extension.jump.nextLocalChange', async () => {
-        const fp = editor.currentFilePosition();
-        if (fp) {
-            const nextPosition = gitDiffCache.nextPosition(fp);
-            if (nextPosition) {
-                nextPosition.line -= 1; // vscode starts at line 0, git lib starts at line 1
-                editor.openDocument(nextPosition.relativePath,
-                    new vscode.Position(nextPosition.line, 0));
-            }
-        }
-    });
-    const previousLocalChangeCommand = vscode.commands.registerCommand('extension.jump.previousLocalChange', async () => {
-        const fp = editor.currentFilePosition();
-        if (fp) {
-            const nextPosition = gitDiffCache.previousPosition(fp);
-            if (nextPosition) {
-                nextPosition.line -= 1; // vscode starts at line 0, git lib starts at line 1
-                editor.openDocument(nextPosition.relativePath,
-                    new vscode.Position(nextPosition.line, 0));
-            }
-        }
-    });
+    const nextLocalChangeCommand = registerGitDiffPositionFunc('extension.jump.nextLocalChange',
+        gitDiffCache.nextPosition.bind(gitDiffCache));
 
+    const previousLocalChangeCommand = registerGitDiffPositionFunc('extension.jump.previousLocalChange',
+        gitDiffCache.previousPosition.bind(gitDiffCache));
 
     context.subscriptions.push(
         nextSymbolCommand,
@@ -82,3 +64,18 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
 }
 
+function registerGitDiffPositionFunc(command: string,
+    gitDiffCachePositionFunc: (fp: git.FilePosition) => git.FilePosition | undefined): vscode.Disposable {
+    const previousLocalChangeCommand = vscode.commands.registerCommand(command, async () => {
+        const fp = editor.currentFilePosition();
+        if (fp) {
+            const nextPosition = gitDiffCachePositionFunc(fp);
+            if (nextPosition) {
+                nextPosition.line -= 1; // vscode starts at line 0, git lib starts at line 1
+                editor.openDocument(nextPosition.relativePath,
+                    new vscode.Position(nextPosition.line, 0));
+            }
+        }
+    });
+    return previousLocalChangeCommand;
+}

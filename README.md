@@ -1,9 +1,13 @@
 # JumpNext extension for Visual Studio Code
 ## Features
 
-Adds the ability to move your cursor to the next (or previous) code symbol (e.g. functions, methods, imports, ...) or local git change.
+Quickly navigate code by jumping by symbol, or by local change.
 
-The available commands are:
+Adds the ability to jump your cursor to the next (or previous):
+- code symbol (e.g. functions, methods, imports, ...) in the active window
+- local (uncommitted git) change across all files in your workspace
+
+### Available commands are:
 
 | Command | Keyboard Shortcut |
 | --- | --- |

@@ -1,6 +1,6 @@
 # JumpNext extension for Visual Studio Code
 
-> Quickly navigate code by jumping by symbol, or by local change.
+> Quickly navigate code jumping by symbol or local change.
 
 ## Features
 

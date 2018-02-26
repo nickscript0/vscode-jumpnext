@@ -69,3 +69,22 @@ export function parseDiff(diffText: string): Change[] {
     if (currentChange !== null) changes.push(currentChange);
     return changes;
 }
+
+// Takes a git diff block after a "@@ -63,8 +63,8 @@" line, breaks it into segments
+// where +- are separated by one or more lines, and calculates the absolute line numbers
+class PlusMinusCounter {
+    block: string;
+    absoluteStartLine: number;
+
+    constructor(block: string, absoluteStartLine: number) {
+        this.block = block;
+        this.absoluteStartLine = absoluteStartLine;
+    }
+
+    parse() {
+        // TODO: just do multiline regex for the 3 cases:
+        // 1. One or more lines that start with + : In this case each line counts
+        // 2. One or more lines that start with - : In this case each line counts
+        // 3. One or more lines that start with +- : In this case only half of the lines count (unless non-symmetric +/- sections are possible??)
+    }
+}

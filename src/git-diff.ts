@@ -3,6 +3,30 @@ export interface Change {
     lines: number[];
 }
 
+/* TODO: Algo refinement for fine-grained diffs: 
+***The Problem: fine-grained diffs can be addition only, subtraction only, or both; making it 
+hard to keep track of the absolute line number. e.g.:
+@@ -63,19
+...
+...
++
+...
+...
+-
++
+...
+...
+-
+-
++
++
+...
+
+***The Solution: 
+Split the file by @@ blocks. Each block is put in a data structure that tracks
+add, sub, add/sub cases and the absolute line number for each. 
+*/
+
 // Algorithm: Repeat the following for each +++ instance
 //  - Parse the file path from the +++ line
 //  - Find each @@, parse line number, find the next line that starts 

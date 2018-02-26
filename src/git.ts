@@ -18,7 +18,7 @@ export class GitDiffCache {
 
     async update() {
         const diffRaw = await gitDiffCommand();
-        if (diffRaw) {
+        if (diffRaw !== null) {
             this.changes = parseDiff(diffRaw);
             this.diffIndex.update(this.changes);
         }

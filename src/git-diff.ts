@@ -26,6 +26,7 @@ export function parseDiff(diffText: string): Change[] {
                 filename: line.split('b/').slice(1).join('b/'),
                 lines: []
             }
+            // TODO: BUG: this should parse the SECOND number in the @@
         } else if (currentChange !== null && line.startsWith('@@')) {
             // Assumes @@ lines of the form: @@ -63,8 +63,8 @@ ...
             startAbsoluteDiffLine = parseInt(line.split('@@ -')[1].split(',')[0]);

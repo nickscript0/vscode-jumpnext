@@ -8,6 +8,12 @@ describe('git', () => {
             assert.equal(res.length, 0);
         });
 
+        it('should parse empty diff', () => {
+            const res = parseDiff('');
+            assert.equal(res.length, 0);
+        });
+
+
         it('should parse diff example A', () => {
             const res = parseDiff(DIFF_A);
             assert.equal(res.length, 3);

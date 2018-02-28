@@ -14,7 +14,7 @@ describe('git', () => {
         });
 
 
-        it('should parse diff example A', () => {
+        it('should parse diff without fine-grained diff sections', () => {
             const res = parseDiff(DIFF_A);
             assert.equal(res.length, 3);
             assert.equal(res[0].filename, 'scripts/src/testapi123.ts');
